@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Song of the Day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f9f9f7;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 52px;
+    }
+
+    /* iPod */
+    .ipod-shell {
+      width: 230px;
+      background: linear-gradient(160deg, #e8e8e8 0%, #d0d0d0 40%, #c8c8c8 100%);
+      border-radius: 34px;
+      padding: 18px 18px 24px;
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.85),
+        inset 0 -1px 1px rgba(0,0,0,.12),
+        0 8px 32px rgba(0,0,0,.18),
+        0 2px 8px rgba(0,0,0,.1);
+      position: relative;
+    }
+
+    .ipod-shell::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 34px;
+      border: .5px solid rgba(255,255,255,.6);
+      pointer-events: none;
+    }
+
+    .ipod-screen-bezel {
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 3px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.5);
+      margin-bottom: 18px;
+    }
+
+    .ipod-screen {
+      background: #b8cfe8;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 130px;
+    }
+
+    .screen-header {
+      background: #5a7fa8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+    }
+
+    .screen-header span {
+      font-size: 10px;
+      color: #e8f0f8;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+
+    .battery-bar {
+      width: 18px; height: 8px;
+      border: 1px solid #c8dff0;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .battery-bar::before {
+      content: '';
+      position: absolute;
+      top: 1px; left: 1px; bottom: 1px;
+      width: 70%;
+      background: #c8dff0;
+      border-radius: 1px;
+    }
+
+    .battery-bar::after {
+      content: '';
+      position: absolute;
+      right: -3px; top: 50%;
+      transform: translateY(-50%);
+      width: 2px; height: 4px;
+      background: #c8dff0;
+    }
+
+    .screen-body { padding: 10px 10px 6px; }
+
+    .screen-now-playing {
+      font-size: 8px;
+      color: #4a6a8a;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .screen-song-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a2a3a;
+      line-height: 1.2;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .screen-artist { font-size: 10px; color: #3a5a7a; margin-bottom: 4px; }
+    .screen-album  { font-size: 9px;  color: #6a8aaa; font-style: italic; margin-bottom: 8px; }
+
+    .screen-progress {
+      height: 3px;
+      background: #8aaac8;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .screen-progress-fill {
+      height: 100%;
+      width: 38%;
+      background: #2a4a6a;
+      border-radius: 2px;
+      animation: progressPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes progressPulse {
+      0%   { width: 38%; }
+      100% { width: 72%; }
+    }
+
+    .screen-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #4a6a8a;
+    }
+
+    .click-wheel-wrap { display: flex; justify-content: center; margin-top: 4px; }
+
+    .click-wheel {
+      width: 152px; height: 152px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #e0e0e0, #c0c0c0 60%, #b0b0b0);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,.7),
+        inset 0 -2px 4px rgba(0,0,0,.2),
+        0 2px 6px rgba(0,0,0,.15);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel-label {
+      position: absolute;
+      font-size: 8px;
+      color: #888;
+      font-weight: 500;
+      letter-spacing: .04em;
+      user-select: none;
+    }
+
+    .wheel-label.top    { top: 14px;    left: 50%;  transform: translateX(-50%); }
+    .wheel-label.bottom { bottom: 14px; left: 50%;  transform: translateX(-50%); }
+    .wheel-label.left   { left: 12px;   top: 50%;   transform: translateY(-50%); }
+    .wheel-label.right  { right: 10px;  top: 50%;   transform: translateY(-50%); }
+
+    .wheel-center {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 36%, #ddd, #bbb);
+      box-shadow:
+        inset 0 1px 3px rgba(255,255,255,.8),
+        inset 0 -1px 2px rgba(0,0,0,.2),
+        0 1px 3px rgba(0,0,0,.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .center-select { font-size: 8px; color: #999; font-weight: 500; letter-spacing: .04em; }
+
+    .divider { width: 1px; height: 48px; background: #e0e0da; }
+
+    /* Prompt card */
+    .prompt-section { width: 100%; max-width: 480px; }
+
+    .prompt-label {
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .prompt-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.06);
+      border: .5px solid rgba(0,0,0,.06);
+    }
+
+    .prompt-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #b0b0b0;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .message-form textarea {
+      width: 100%;
+      display: block;
+      background: #f5f5f3;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      outline: none;
+      resize: none;
+      transition: background .2s;
+      height: 100px;
+    }
+
+    .message-form textarea:focus    { background: #efefec; }
+    .message-form textarea::placeholder { color: #bbb; }
+
+    .send-btn {
+      width: 100%;
+      padding: 13px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, transform .1s;
+    }
+
+    .send-btn:hover  { background: #333; }
+    .send-btn:active { transform: scale(.98); }
+
+    .success-msg {
+      display: none;
+      text-align: center;
+      padding: 16px;
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    /* Admin */
+    .admin-toggle {
+      font-size: 12px;
+      color: #ccc;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: .06em;
+      user-select: none;
+      transition: color .2s;
+    }
+
+    .admin-toggle:hover { color: #aaa; }
+
+    .admin-panel {
+      display: none;
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.06);
+      border: .5px solid rgba(0,0,0,.06);
+    }
+
+    .admin-panel.open { display: block; }
+
+    .admin-title {
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 16px;
+    }
+
+    .admin-panel label {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+
+    .admin-panel input,
+    .admin-panel textarea {
+      width: 100%;
+      display: block;
+      background: #f5f5f3;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      outline: none;
+      resize: none;
+    }
+
+    .admin-panel textarea { height: 70px; }
+
+    .admin-save {
+      margin-top: 16px;
+      width: 100%;
+      padding: 11px;
+      background: #f0f0ee;
+      color: #555;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .admin-save:hover { background: #e5e5e2; }
+
+    .footer-note {
+      font-size: 11px;
+      color: #ccc;
+      text-align: center;
+      letter-spacing: .04em;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="ipod-shell">
+      <div class="ipod-screen-bezel">
+        <div class="ipod-screen">
+          <div class="screen-header">
+            <span>Now Playing</span>
+            <div class="battery-bar"></div>
+          </div>
+          <div class="screen-body">
+            <div class="screen-now-playing">Song of the Day</div>
+            <div class="screen-song-title" id="display-title">Placeholder Song</div>
+            <div class="screen-artist"     id="display-artist">Artist Name</div>
+            <div class="screen-album"      id="display-album">Album Title · 2024</div>
+            <div class="screen-progress"><div class="screen-progress-fill"></div></div>
+            <div class="screen-time">
+              <span>1:24</span>
+              <span id="display-duration">3:47</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="click-wheel-wrap">
+        <div class="click-wheel">
+          <div class="wheel-label top">MENU</div>
+          <div class="wheel-label left">&#9664;&#9664;</div>
+          <div class="wheel-label right">&#9654;&#9654;</div>
+          <div class="wheel-label bottom">&#9654;</div>
+          <div class="wheel-center"><span class="center-select">SELECT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="prompt-section">
+      <div class="prompt-label">Today's prompt</div>
+      <div class="prompt-card">
+        <div class="prompt-text" id="display-prompt">What song takes you back to a specific memory?</div>
+        <div class="message-form" id="message-form">
+          <textarea id="sender-msg" placeholder="tell me everything — or just a little..."></textarea>
+          <button class="send-btn" onclick="sendMessage()">Send ↗</button>
+        </div>
+        <div class="success-msg" id="success-msg">Thanks for sharing ✦ Your message is on its way.</div>
+      </div>
+    </div>
+
+    <div class="admin-toggle" onclick="toggleAdmin()">· admin ·</div>
+
+    <div class="admin-panel" id="admin-panel">
+      <div class="admin-title">Update today</div>
+      <label>Song title</label>
+      <input type="text" id="admin-title"    placeholder="e.g. Midnight Rain" />
+      <label>Artist</label>
+      <input type="text" id="admin-artist"   placeholder="e.g. Taylor Swift" />
+      <label>Album</label>
+      <input type="text" id="admin-album"    placeholder="e.g. Midnights · 2022" />
+      <label>Duration</label>
+      <input type="text" id="admin-duration" placeholder="e.g. 3:47" />
+      <label>Today's prompt</label>
+      <textarea id="admin-prompt" placeholder="e.g. What song takes you back to a specific memory?"></textarea>
+      <label>Your email (for replies)</label>
+      <input type="text" id="admin-email"    placeholder="you@email.com" />
+      <button class="admin-save" onclick="saveAdmin()">Save changes</button>
+    </div>
+
+    <div class="footer-note">made with love · updated daily</div>
+
+  </div>
+
+  <script>
+    let recipientEmail = 'you@placeholder.com';
+
+    function toggleAdmin() {
+      document.getElementById('admin-panel').classList.toggle('open');
+    }
+
+    function saveAdmin() {
+      const t = id => document.getElementById(id).value.trim();
+      if (t('admin-title'))    document.getElementById('display-title').textContent    = t('admin-title');
+      if (t('admin-artist'))   document.getElementById('display-artist').textContent   = t('admin-artist');
+      if (t('admin-album'))    document.getElementById('display-album').textContent    = t('admin-album');
+      if (t('admin-duration')) document.getElementById('display-duration').textContent = t('admin-duration');
+      if (t('admin-prompt'))   document.getElementById('display-prompt').textContent   = t('admin-prompt');
+      if (t('admin-email'))    recipientEmail = t('admin-email');
+      document.getElementById('admin-panel').classList.remove('open');
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById('sender-msg').value.trim();
+      if (!msg) return;
+      const song    = document.getElementById('display-title').textContent;
+      const subject = encodeURIComponent('Song of the Day reply: ' + song);
+      const body    = encodeURIComponent(msg);
+      window.open('mailto:' + recipientEmail + '?subject=' + subject + '&body=' + body);
+      document.getElementById('message-form').style.display = 'none';
+      document.getElementById('success-msg').style.display  = 'block';
+    }
+  </script>
+</body>
+</html>
