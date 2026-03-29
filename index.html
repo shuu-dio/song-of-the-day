@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Song of the Day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f9f9f7;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 52px;
+    }
+
+    .ipod-shell {
+      width: 230px;
+      background: linear-gradient(160deg, #e8e8e8 0%, #d0d0d0 40%, #c8c8c8 100%);
+      border-radius: 34px;
+      padding: 18px 18px 24px;
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.85),
+        inset 0 -1px 1px rgba(0,0,0,.12),
+        0 8px 32px rgba(0,0,0,.18),
+        0 2px 8px rgba(0,0,0,.1);
+      position: relative;
+    }
+
+    .ipod-shell::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 34px;
+      border: .5px solid rgba(255,255,255,.6);
+      pointer-events: none;
+    }
+
+    .ipod-screen-bezel {
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 3px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.5);
+      margin-bottom: 18px;
+    }
+
+    .ipod-screen {
+      background: #b8cfe8;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 130px;
+    }
+
+    .screen-header {
+      background: #5a7fa8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+    }
+
+    .screen-header span {
+      font-size: 10px;
+      color: #e8f0f8;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+
+    .battery-bar {
+      width: 18px; height: 8px;
+      border: 1px solid #c8dff0;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .battery-bar::before {
+      content: '';
+      position: absolute;
+      top: 1px; left: 1px; bottom: 1px;
+      width: 70%;
+      background: #c8dff0;
+      border-radius: 1px;
+    }
+
+    .battery-bar::after {
+      content: '';
+      position: absolute;
+      right: -3px; top: 50%;
+      transform: translateY(-50%);
+      width: 2px; height: 4px;
+      background: #c8dff0;
+    }
+
+    .screen-body { padding: 10px 10px 6px; }
+
+    .screen-now-playing {
+      font-size: 8px;
+      color: #4a6a8a;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .screen-song-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a2a3a;
+      line-height: 1.2;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .screen-artist { font-size: 10px; color: #3a5a7a; margin-bottom: 4px; }
+    .screen-album  { font-size: 9px;  color: #6a8aaa; font-style: italic; margin-bottom: 6px; }
+
+    .screen-progress {
+      height: 3px;
+      background: #8aaac8;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .screen-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #2a4a6a;
+      border-radius: 2px;
+      transition: width 0.5s linear;
+    }
+
+    .screen-progress-fill.idle {
+      animation: progressPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes progressPulse {
+      0%   { width: 38%; }
+      100% { width: 72%; }
+    }
+
+    .screen-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #4a6a8a;
+    }
+
+    .click-wheel-wrap { display: flex; justify-content: center; margin-top: 4px; }
+
+    .click-wheel {
+      width: 152px; height: 152px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #e0e0e0, #c0c0c0 60%, #b0b0b0);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,.7),
+        inset 0 -2px 4px rgba(0,0,0,.2),
+        0 2px 6px rgba(0,0,0,.15);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel-label {
+      position: absolute;
+      font-size: 8px;
+      color: #888;
+      font-weight: 500;
+      letter-spacing: .04em;
+      user-select: none;
+    }
+
+    .wheel-label.top    { top: 14px;    left: 50%;  transform: translateX(-50%); }
+    .wheel-label.bottom { bottom: 14px; left: 50%;  transform: translateX(-50%); cursor: pointer; }
+    .wheel-label.left   { left: 12px;   top: 50%;   transform: translateY(-50%); }
+    .wheel-label.right  { right: 10px;  top: 50%;   transform: translateY(-50%); }
+
+    .wheel-label.bottom:hover { color: #555; }
+
+    .wheel-center {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 36%, #ddd, #bbb);
+      box-shadow:
+        inset 0 1px 3px rgba(255,255,255,.8),
+        inset 0 -1px 2px rgba(0,0,0,.2),
+        0 1px 3px rgba(0,0,0,.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .1s;
+    }
+
+    .wheel-center:active { transform: scale(.95); }
+
+    .center-btn {
+      font-size: 16px;
+      color: #888;
+      line-height: 1;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    .wheel-center:hover .center-btn { color: #555; }
+    .wheel-center.playing .center-btn { color: #2a4a6a; }
+
+    .preview-badge {
+      font-size: 7px;
+      color: #7a9aaa;
+      text-align: center;
+      margin-top: 6px;
+      letter-spacing: .04em;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .preview-badge.visible { opacity: 1; }
+
+    .divider { width: 1px; height: 48px; background: #e0e0da; }
+
+    .prompt-section { width: 100%; max-width: 480px; }
+
+    .prompt-label {
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .prompt-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.06);
+      border: .5px solid rgba(0,0,0,.06);
+    }
+
+    .prompt-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #b0b0b0;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .message-form textarea {
+      width: 100%;
+      display: block;
+      background: #f5f5f3;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      outline: none;
+      resize: none;
+      transition: background .2s;
+      height: 100px;
+    }
+
+    .message-form textarea:focus        { background: #efefec; }
+    .message-form textarea::placeholder { color: #bbb; }
+
+    .send-btn {
+      width: 100%;
+      padding: 13px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, transform .1s;
+    }
+
+    .send-btn:hover    { background: #333; }
+    .send-btn:active   { transform: scale(.98); }
+    .send-btn:disabled { background: #ccc; cursor: default; }
+
+    .success-msg {
+      display: none;
+      text-align: center;
+      padding: 16px;
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    /* Admin */
+    .admin-panel {
+      display: none;
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.06);
+      border: .5px solid rgba(0,0,0,.06);
+    }
+
+    .admin-panel.open { display: block; }
+
+    .admin-title {
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 16px;
+    }
+
+    .spotify-search-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .spotify-search-wrap input {
+      width: 100%;
+      display: block;
+      background: #f5f5f3;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      outline: none;
+    }
+
+    .spotify-search-wrap input::placeholder { color: #bbb; }
+
+    .search-results {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.1);
+      border: .5px solid rgba(0,0,0,.06);
+      overflow: hidden;
+      z-index: 10;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .search-results.visible { display: block; }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background .15s;
+      border-bottom: .5px solid #f0f0ee;
+    }
+
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover      { background: #f9f9f7; }
+
+    .result-art {
+      width: 36px; height: 36px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #eee;
+    }
+
+    .result-info { flex: 1; min-width: 0; }
+
+    .result-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a1a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-sub {
+      font-size: 11px;
+      color: #aaa;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-status {
+      font-size: 12px;
+      color: #bbb;
+      padding: 12px 14px;
+      text-align: center;
+    }
+
+    .selected-song {
+      display: none;
+      background: #f5f5f3;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .selected-song.visible { display: block; }
+    .selected-song strong  { color: #1a1a1a; display: block; font-weight: 500; }
+
+    .admin-panel label {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      margin-top: 14px;
+    }
+
+    .admin-panel textarea {
+      width: 100%;
+      display: block;
+      background: #f5f5f3;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      outline: none;
+      resize: none;
+      height: 70px;
+    }
+
+    .admin-save {
+      margin-top: 16px;
+      width: 100%;
+      padding: 11px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .admin-save:hover { background: #333; }
+
+    .footer-note {
+      font-size: 11px;
+      color: #ccc;
+      text-align: center;
+      letter-spacing: .04em;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="ipod-shell">
+      <div class="ipod-screen-bezel">
+        <div class="ipod-screen">
+          <div class="screen-header">
+            <span>Now Playing</span>
+            <div class="battery-bar"></div>
+          </div>
+          <div class="screen-body">
+            <div class="screen-now-playing">Song of the Day</div>
+            <div class="screen-song-title" id="display-title">Placeholder Song</div>
+            <div class="screen-artist"     id="display-artist">Artist Name</div>
+            <div class="screen-album"      id="display-album">Album Title · 2024</div>
+            <div class="screen-progress">
+              <div class="screen-progress-fill idle" id="progress-fill"></div>
+            </div>
+            <div class="screen-time">
+              <span id="time-current">0:00</span>
+              <span id="display-duration">3:47</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="click-wheel-wrap">
+        <div class="click-wheel">
+          <div class="wheel-label top">MENU</div>
+          <div class="wheel-label left">&#9664;&#9664;</div>
+          <div class="wheel-label right">&#9654;&#9654;</div>
+          <div class="wheel-label bottom" onclick="togglePlay()">&#9654;</div>
+          <div class="wheel-center" id="wheel-center" onclick="togglePlay()">
+            <span class="center-btn" id="center-btn">&#9654;</span>
+          </div>
+        </div>
+      </div>
+      <div class="preview-badge" id="preview-badge">30s preview</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="prompt-section">
+      <div class="prompt-label">Today's prompt</div>
+      <div class="prompt-card">
+        <div class="prompt-text" id="display-prompt">What song takes you back to a specific memory?</div>
+        <div class="message-form" id="message-form">
+          <textarea id="sender-msg" placeholder="tell me everything — or just a little..."></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">Send ↗</button>
+        </div>
+        <div class="success-msg" id="success-msg">Thanks for sharing ✦ Your message is on its way.</div>
+      </div>
+    </div>
+
+    <!-- Hidden admin — type A D M -->
+    <div class="admin-panel" id="admin-panel">
+      <div class="admin-title">Update today's song</div>
+
+      <label>Search Spotify</label>
+      <div class="spotify-search-wrap">
+        <input type="text" id="spotify-search" placeholder="Search for a song..." autocomplete="off" />
+        <div class="search-results" id="search-results">
+          <div class="search-status" id="search-status">Start typing to search...</div>
+        </div>
+      </div>
+
+      <div class="selected-song" id="selected-song">
+        <strong id="selected-title">—</strong>
+        <span id="selected-meta">—</span>
+      </div>
+
+      <label>Today's prompt</label>
+      <textarea id="admin-prompt" placeholder="e.g. What song takes you back to a specific memory?"></textarea>
+
+      <button class="admin-save" onclick="saveAdmin()">Save changes</button>
+    </div>
+
+    <div class="footer-note">made with love · updated daily</div>
+  </div>
+
+  <script>
+    const SPOTIFY_CLIENT_ID     = '9de4f82dafcb475a964e44120789ead2';
+    const SPOTIFY_CLIENT_SECRET = '9b08fb9f8a2d49be9239b7f356a0afb9';
+    const FORMSPREE_URL         = 'https://formspree.io/f/xbdpdbkk';
+
+    let spotifyToken  = null;
+    let tokenExpiry   = 0;
+    let searchTimeout = null;
+    let selectedTrack = null;
+    let previewUrl    = null;
+
+    // Audio
+    let audio       = null;
+    let isPlaying   = false;
+    let progressInt = null;
+
+    // Secret knock: type a d m (only when not in input)
+    const secret = ['a', 'd', 'm'];
+    let typed = [];
+
+    document.addEventListener('keydown', function(e) {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      typed.push(e.key.toLowerCase());
+      if (typed.length > secret.length) typed.shift();
+      if (typed.join('') === secret.join('')) {
+        document.getElementById('admin-panel').classList.toggle('open');
+        typed = [];
+      }
+    });
+
+    // Play / pause
+    function togglePlay() {
+      if (!previewUrl) return;
+
+      if (!audio) {
+        audio = new Audio(previewUrl);
+        audio.addEventListener('ended', stopPlayback);
+      }
+
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        clearInterval(progressInt);
+        document.getElementById('center-btn').innerHTML = '&#9654;';
+        document.getElementById('wheel-center').classList.remove('playing');
+        document.getElementById('progress-fill').classList.add('idle');
+      } else {
+        audio.play();
+        isPlaying = true;
+        document.getElementById('center-btn').innerHTML = '&#9646;&#9646;';
+        document.getElementById('wheel-center').classList.add('playing');
+        document.getElementById('progress-fill').classList.remove('idle');
+        document.getElementById('preview-badge').classList.add('visible');
+
+        progressInt = setInterval(() => {
+          if (!audio) return;
+          const pct  = (audio.currentTime / 30) * 100;
+          const secs = Math.floor(audio.currentTime);
+          const min  = Math.floor(secs / 60);
+          const sec  = secs % 60;
+          document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
+          document.getElementById('time-current').textContent  = min + ':' + String(sec).padStart(2, '0');
+        }, 500);
+      }
+    }
+
+    function stopPlayback() {
+      isPlaying = false;
+      clearInterval(progressInt);
+      if (audio) { audio.currentTime = 0; }
+      document.getElementById('center-btn').innerHTML = '&#9654;';
+      document.getElementById('wheel-center').classList.remove('playing');
+      document.getElementById('progress-fill').style.width = '0%';
+      document.getElementById('progress-fill').classList.add('idle');
+      document.getElementById('time-current').textContent = '0:00';
+    }
+
+    // Spotify token
+    async function getSpotifyToken() {
+      if (spotifyToken && Date.now() < tokenExpiry) return spotifyToken;
+      const res  = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+        },
+        body: 'grant_type=client_credentials'
+      });
+      const data   = await res.json();
+      spotifyToken = data.access_token;
+      tokenExpiry  = Date.now() + (data.expires_in - 60) * 1000;
+      return spotifyToken;
+    }
+
+    function formatDuration(ms) {
+      const s   = Math.floor(ms / 1000);
+      const min = Math.floor(s / 60);
+      const sec = s % 60;
+      return min + ':' + String(sec).padStart(2, '0');
+    }
+
+    // Search
+    document.getElementById('spotify-search').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const q = this.value.trim();
+      if (!q) { closeResults(); return; }
+      setSearchStatus('Searching...');
+      showResults();
+      searchTimeout = setTimeout(() => searchSpotify(q), 400);
+    });
+
+    document.getElementById('spotify-search').addEventListener('focus', function() {
+      if (this.value.trim()) showResults();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.spotify-search-wrap')) closeResults();
+    });
+
+    async function searchSpotify(q) {
+      try {
+        const token = await getSpotifyToken();
+        const res   = await fetch('https://api.spotify.com/v1/search?q=' + encodeURIComponent(q) + '&type=track&limit=6', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        renderResults(data.tracks.items);
+      } catch(e) {
+        setSearchStatus('Could not connect to Spotify.');
+      }
+    }
+
+    function renderResults(tracks) {
+      const box = document.getElementById('search-results');
+      if (!tracks || tracks.length === 0) { setSearchStatus('No results found.'); return; }
+      box.innerHTML = '';
+      tracks.forEach(track => {
+        const art    = track.album.images[2] ? track.album.images[2].url : '';
+        const title  = track.name;
+        const artist = track.artists.map(a => a.name).join(', ');
+        const album  = track.album.name;
+        const year   = track.album.release_date ? track.album.release_date.slice(0, 4) : '';
+        const dur    = formatDuration(track.duration_ms);
+        const preview = track.preview_url || null;
+
+        const item = document.createElement('div');
+        item.className = 'search-result-item';
+        item.innerHTML = `
+          <img class="result-art" src="${art}" alt="" />
+          <div class="result-info">
+            <div class="result-title">${title}</div>
+            <div class="result-sub">${artist} · ${album}${preview ? '' : ' · no preview'}</div>
+          </div>`;
+        item.addEventListener('click', () => selectTrack({ title, artist, album, year, dur, preview }));
+        box.appendChild(item);
+      });
+      showResults();
+    }
+
+    function selectTrack(track) {
+      selectedTrack = track;
+      document.getElementById('spotify-search').value = '';
+      closeResults();
+
+      document.getElementById('selected-title').textContent = track.title;
+      document.getElementById('selected-meta').textContent  = track.artist + ' · ' + track.album + ' · ' + track.year;
+      document.getElementById('selected-song').classList.add('visible');
+    }
+
+    function showResults()  { document.getElementById('search-results').classList.add('visible'); }
+    function closeResults() { document.getElementById('search-results').classList.remove('visible'); }
+    function setSearchStatus(msg) {
+      document.getElementById('search-results').innerHTML = '<div class="search-status">' + msg + '</div>';
+    }
+
+    function saveAdmin() {
+      if (selectedTrack) {
+        // Stop any playing audio and reset
+        if (audio) { audio.pause(); audio = null; }
+        stopPlayback();
+
+        document.getElementById('display-title').textContent    = selectedTrack.title;
+        document.getElementById('display-artist').textContent   = selectedTrack.artist;
+        document.getElementById('display-album').textContent    = selectedTrack.album + ' · ' + selectedTrack.year;
+        document.getElementById('display-duration').textContent = selectedTrack.dur;
+
+        previewUrl = selectedTrack.preview || null;
+
+        // Show/hide play affordance
+        const wc = document.getElementById('wheel-center');
+        wc.style.cursor = previewUrl ? 'pointer' : 'default';
+        document.getElementById('preview-badge').classList.remove('visible');
+      }
+
+      const prompt = document.getElementById('admin-prompt').value.trim();
+      if (prompt) document.getElementById('display-prompt').textContent = prompt;
+
+      document.getElementById('admin-panel').classList.remove('open');
+      document.getElementById('selected-song').classList.remove('visible');
+      selectedTrack = null;
+    }
+
+    // Formspree anonymous submit
+    async function sendMessage() {
+      const msg = document.getElementById('sender-msg').value.trim();
+      if (!msg) return;
+
+      const btn = document.getElementById('send-btn');
+      btn.disabled    = true;
+      btn.textContent = 'Sending...';
+
+      const song = document.getElementById('display-title').textContent;
+
+      try {
+        const res = await fetch(FORMSPREE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ song, message: msg })
+        });
+
+        if (res.ok) {
+          document.getElementById('message-form').style.display = 'none';
+          document.getElementById('success-msg').style.display  = 'block';
+        } else {
+          btn.disabled    = false;
+          btn.textContent = 'Send ↗';
+          alert('Something went wrong. Please try again.');
+        }
+      } catch(e) {
+        btn.disabled    = false;
+        btn.textContent = 'Send ↗';
+        alert('Could not send. Please check your connection.');
+      }
+    }
+  </script>
+</body>
+</html>
